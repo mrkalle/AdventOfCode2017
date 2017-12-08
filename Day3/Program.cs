@@ -7,35 +7,11 @@ namespace Day3
     {
         static void Main(string[] args)
         {
-            // var result = GetDistance1(1);
-            // Console.WriteLine("Test1 Result Part 1: " + result);
+            var result = GetDistance1(361527);
+            Console.WriteLine("Result Part 1: " + result);
             
-            // result = GetDistance1(12);
-            // Console.WriteLine("Test2 Result Part 1: " + result);
-           
-            // result = GetDistance1(23);
-            // Console.WriteLine("Test3 Result Part 1: " + result);
-       
-            // result = GetDistance1(1024);
-            // Console.WriteLine("Test4 Result Part 1: " + result);
-            
-            // result = GetDistance1(361527);
-            // Console.WriteLine("Result Part 1: " + result);
-
-            // var result = GetDistance2(5);
-            // Console.WriteLine("Test1 Result Part 1: " + result + " should be 5");
-
-            // result = GetDistance2(10);
-            // Console.WriteLine("Test2 Result Part 1: " + result + " should be 26");
-       
-            // result = GetDistance2(21);
-            // Console.WriteLine("Test3 Result Part 1: " + result);
-
-            var result = GetDistance2(100);
-            Console.WriteLine("Test4 Result Part 1: " + result);
-            
-            // var result = GetDistance2(361527);
-            // Console.WriteLine("Result Part 1: " + result);
+            result = GetDistance2(361527);
+            Console.WriteLine("Result Part 2: " + result);
         }
         
         static int GetDistance1(int nr)
@@ -85,12 +61,12 @@ namespace Day3
             return 0;
         }
 
-        private static Dictionary<int, Dictionary<int, long>> values = new Dictionary<int, Dictionary<int, long>>();
+        private static Dictionary<int, Dictionary<int, int>> values = new Dictionary<int, Dictionary<int, int>>();
         
-        static long GetDistance2(int nr)
+        static int GetDistance2(int nr)
         {
             for (var i = -400; i < 400; i++) {
-                values[i] = new Dictionary<int, long>();
+                values[i] = new Dictionary<int, int>();
                 for (var j = -400; j < 400; j++) {
                     values[i][j] = 0;
                 }
@@ -104,11 +80,6 @@ namespace Day3
             var lengthCounter = 0;
             var lengthIndex = 0;
             for (var i = 1; i <= nr; i++) {
-
-                if (i == nr) {
-                    return GetSum(lastCoord.Item1, lastCoord.Item2);
-                }
-
                 Tuple<int,int,int> newCoord = null;
                 switch (dir) {
                     case 0:
@@ -137,27 +108,32 @@ namespace Day3
                     }
                 }
 
-                //Console.WriteLine("x: " + newCoord.Item1 + ", y: " + newCoord.Item2);
-                values[newCoord.Item1][newCoord.Item2] = GetSum(newCoord.Item1, newCoord.Item2);
+                var sumVal = GetSum(newCoord.Item1, newCoord.Item2);
+                values[newCoord.Item1][newCoord.Item2] = sumVal;
+
+                if (sumVal > nr) {
+                    return sumVal;
+                }
+
                 lastCoord = newCoord;
             }
 
             return 0;
         }
         
-        static long GetSum(int x, int y)
+        static int GetSum(int x, int y)
         {
-            var vals = new List<long>();
-            vals.Add(values[x+1][y]);
-            vals.Add(values[x+1][y+1]);
-            vals.Add(values[x][y+1]);
-            vals.Add(values[x-1][y+1]);
-            vals.Add(values[x-1][y]);
-            vals.Add(values[x-1][y-1]);
-            vals.Add(values[x][y-1]);
-            vals.Add(values[x+1][y-1]);
+            var vals = new List<int>();
+            vals.Add(values[x+1][y]); // right
+            vals.Add(values[x+1][y+1]); // up right
+            vals.Add(values[x][y+1]); // up
+            vals.Add(values[x-1][y+1]); // up left
+            vals.Add(values[x-1][y]); // left
+            vals.Add(values[x-1][y-1]); // down left
+            vals.Add(values[x][y-1]); // down
+            vals.Add(values[x+1][y-1]); // down right
 
-            long sum = 0;
+            int sum = 0;
             foreach (var val in vals) {
                 sum += val;
             }
