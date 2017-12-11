@@ -13,19 +13,21 @@ namespace Day11
         {
             var steps = System.IO.File.ReadAllLines(@"C:\Users\clundin\Documents\AoC\Day11\steps.txt")[0];
 
-            //Console.WriteLine("Test1 Result part 1: " + GetDistanceFromOrigo(testInput1));
-            //Console.WriteLine("Test2 Result part 1: " + GetDistanceFromOrigo(testInput2));
-            //Console.WriteLine("Test3 Result part 1: " + GetDistanceFromOrigo(testInput3));
-            //Console.WriteLine("Test4 Result part 1: " + GetDistanceFromOrigo(testInput4));
-            Console.WriteLine("Result part 1: " + GetDistanceFromOrigo(steps));
+            var result = GetDistanceFromOrigo(steps);
+            Console.WriteLine("Result part 1: " + result.Item1);
+            Console.WriteLine("Result part 2: " + result.Item2);
         }
         
-        static int GetDistanceFromOrigo(string steps)
+        static Tuple<int, int> GetDistanceFromOrigo(string steps)
         {
             var stepsArray = steps.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
             var xCoord = 0.0;
             var yCoord = 0.0;
+
+            var xCoordHigh = 0.0;
+            var yCoordHigh = 0.0;
+            var totSumHigh = 0.0;
 
             foreach (var dir in stepsArray) {
                 switch (dir+"") {
@@ -52,10 +54,19 @@ namespace Day11
                         yCoord += 0.5;
                         break;
                 }
+
+                var totSum = Math.Abs(xCoord) + Math.Abs(yCoord);
+                if (totSum > totSumHigh) {
+                    xCoordHigh = xCoord;
+                    yCoordHigh = yCoord;
+                    totSumHigh = totSum;
+                }
             }
 
-            // Räkna ut hur många steg bort slutpositionen är!
+            return new Tuple<int, int>(GetStepsFromOrigo(xCoord, yCoord), GetStepsFromOrigo(xCoordHigh, yCoordHigh));
+        }
 
+        static int GetStepsFromOrigo(double xCoord, double yCoord) {
             var nrOfStepsBack = 0;
             while (xCoord != 0) {
                 
