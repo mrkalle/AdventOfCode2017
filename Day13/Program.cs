@@ -5,14 +5,15 @@ namespace Day13
 {
     class Program
     {
+        static List<List<int>> FirewallLayersOriginal = new List<List<int>>();
         static List<List<int>> FirewallLayers = new List<List<int>>();
         static string[] input; 
 
         static void Main(string[] args)
         {
-            input = System.IO.File.ReadAllLines(@"C:\Users\clundin\Documents\AoC\Day13\input.txt");
-
+            input = System.IO.File.ReadAllLines(@"C:\Development\AdventOfCode2017\Day13\input.txt");
             SetupDataStructure();
+
             Console.WriteLine("Result part 1: " + GetDamage(false));
 
             var leastNrOfCyclesToDelay = GetWinningCycleNr();
@@ -22,13 +23,12 @@ namespace Day13
         static int GetWinningCycleNr() {
             var leastNrOfCyclesToDelay = 1;
             while (true) {
-                if (leastNrOfCyclesToDelay % 2 != 0) {
+                if (!IsItEvenWorthToTry(leastNrOfCyclesToDelay)) {
                     leastNrOfCyclesToDelay++;
                     continue;
                 }
 
-                FirewallLayers = new List<List<int>>();
-                SetupDataStructure();
+                SetupDataStructureLight();
 
                 for (var i = 0; i < leastNrOfCyclesToDelay; i++) 
                 {
@@ -40,8 +40,25 @@ namespace Day13
                     return leastNrOfCyclesToDelay;
                 }
 
+                Console.WriteLine(leastNrOfCyclesToDelay + ": " + damage);
+
                 leastNrOfCyclesToDelay++;
             }
+        }
+
+        static bool IsItEvenWorthToTry(int nrOfDelayCycles) {
+            for (var i = 0; i < FirewallLayers.Count; i++) {
+                if (FirewallLayers[i].Count == 0) {
+                    continue; // no worries, test next
+                }
+
+                var evilFactorVal = (FirewallLayers[i].Count - 1) * 2;
+                if ((i + nrOfDelayCycles) % evilFactorVal == 0) {
+                    return false; // we will hit the scanner for certain.
+                }
+            }
+
+            return true;
         }
 
         static int GetDamage(bool onlyDamage) {
@@ -50,7 +67,7 @@ namespace Day13
             {
                 if (FirewallLayers[i].Count > 0 && FirewallLayers[i][0] != 0) {
                     if (onlyDamage) {
-                        return 1;
+                        return i;
                     }
 
                     damage += i * FirewallLayers[i].Count;
@@ -101,7 +118,7 @@ namespace Day13
             var maxNrOfLayers = int.Parse(lastRow[0]);
 
             for (var i = 0; i <= maxNrOfLayers; i++) {
-                FirewallLayers.Add(new List<int>());
+                FirewallLayersOriginal.Add(new List<int>());
             }
 
             for (var i = 0; i < input.Length; i++)
@@ -113,11 +130,27 @@ namespace Day13
                 var depth = int.Parse(items[1]);
 
                 for (var j = 0; j < depth; j++) {
-                    FirewallLayers[layerId].Add(0);
+                    FirewallLayersOriginal[layerId].Add(0);
                 }
             }
             
             for (var i = 0; i <= maxNrOfLayers; i++) {
+                if (FirewallLayersOriginal[i].Count > 0) {
+                    FirewallLayersOriginal[i][0] = 1;
+                }
+            }
+
+            SetupDataStructureLight();
+        }
+
+        static void SetupDataStructureLight() {     
+            FirewallLayers = new List<List<int>>();             
+            for (var i = 0; i < FirewallLayersOriginal.Count; i++) { 
+                FirewallLayers.Add(new List<int>());                      
+                for (var j = 0; j < FirewallLayersOriginal[i].Count; j++) {
+                    FirewallLayers[i].Add(0);
+                }
+
                 if (FirewallLayers[i].Count > 0) {
                     FirewallLayers[i][0] = 1;
                 }
