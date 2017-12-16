@@ -17,7 +17,28 @@ namespace Day16
 
             DancePrograms();
 
-            Console.WriteLine("Result part 1: " + new string(programs));
+            var firstOutput = new string(programs);
+            Console.WriteLine("Result part 1: " + firstOutput);
+
+            var cycleLength = 0;
+            for (var i = 1; i < 1000; i++) {
+                DancePrograms();
+
+                var output = new string(programs);
+                if (firstOutput == output) {
+                    cycleLength = i;
+                    break;
+                }
+            }
+
+            var restOfBillion = 1000000000%cycleLength;
+           
+            programs = new char[] { 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p'};
+            for (var i = 0; i < restOfBillion; i++) {
+                DancePrograms();
+            }
+
+            Console.WriteLine("Result part 2: " + new string(programs));
         }
 
         static void DancePrograms() {
