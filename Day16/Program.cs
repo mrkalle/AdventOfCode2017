@@ -12,7 +12,7 @@ namespace Day16
         {
             programs = new char[] { 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p'};
 
-            var input = System.IO.File.ReadAllLines(@"C:\Development\AdventOfCode2017\Day16\input.txt")[0];
+            var input = System.IO.File.ReadAllLines(@"input.txt")[0];
             SetupDataStructure(input);
 
             DancePrograms();
