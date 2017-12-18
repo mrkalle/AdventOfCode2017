@@ -8,15 +8,148 @@ namespace Day18
     {
         static List<Tuple<string, string, string>> instructions = new List<Tuple<string, string, string>>();
         static Dictionary<char, BigInteger> registers = new Dictionary<char, BigInteger>();
+        static List<Dictionary<char, BigInteger>> registers2 = new List<Dictionary<char, BigInteger>>();
         static int index = 0;
+        static List<int> indexes = new List<int>();
+        static int cp = 0; // current program
+        static List<bool> isInReceiveState = new List<bool>() { false, false };
         static BigInteger lastFreqSent = 0;
+
+        static List<List<BigInteger>> inQueue = new List<List<BigInteger>>();
+        static int programOneSendCounter = 0;
+        static List<char> waitChars = new List<char>();
 
         static void Main(string[] args)
         {
             //SetupDataStructure("inputTest.txt");
-            SetupDataStructure("input.txt");
+            //SetupDataStructure("input.txt");
+            //Console.WriteLine("Result part 1: " + GetResult());
+            
+            SetupDataStructure2("inputTest2.txt");
+            //SetupDataStructure("input.txt");
+            Console.WriteLine("Result part 2: " + GetResult2());
+        }
 
-            Console.WriteLine("Result part 1: " + GetResult());
+        static BigInteger GetResult2() 
+        {
+            BigInteger value;
+            BigInteger val;
+            while (true) {
+                try {
+                    if (isInReceiveState[0] && isInReceiveState[1]) {
+                        return programOneSendCounter;
+                    }
+
+                    if (isInReceiveState[cp]) {
+                        var otherCppp = cp == 0 ? 1 : 0;
+                        BigInteger tmp = inQueue[otherCppp][0];
+                        inQueue[otherCppp].RemoveAt(0);
+                        registers2[cp][waitChars[cp]] = tmp;
+                    }
+
+                    var instruction = instructions[indexes[cp]];
+                    var regName = instruction.Item2[0];
+                    //Console.WriteLine(instruction.Item1 + " " + instruction.Item2 + " " + instruction.Item3 ?? "");
+                    switch (instruction.Item1) {
+                        case "set":
+                            value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
+                            registers2[cp][regName] = value;
+                            indexes[cp] = indexes[cp] + 1;
+                            break;
+                        case "add":
+                            value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
+                            registers2[cp][regName] = registers2[cp][regName] + value;
+                            indexes[cp] = indexes[cp] + 1;
+                            break;
+                        case "mul":
+                            value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
+                            var mulVal = registers2[cp][regName] * value;
+                            registers2[cp][regName] = mulVal;
+                            
+                            Console.WriteLine("mulVal " + mulVal);
+                            indexes[cp] = indexes[cp] + 1;
+                            break;
+                        case "mod":
+                            value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
+                            var modVal = registers2[cp][regName] % value;
+                            registers2[cp][regName] = modVal;
+                            
+                            Console.WriteLine("modVal " + modVal);
+                            indexes[cp] = indexes[cp] + 1;
+                            break;
+                        case "snd":
+                            var otherCp = cp == 0 ? 1 : 0;
+                            inQueue[otherCp].Add(registers2[cp][regName]);
+
+                            if (cp == 1) {
+                                programOneSendCounter++;
+                            }
+
+                            break;
+                        case "rcv":
+
+                            if (registers2[cp][regName] != 0) {
+                                
+                                var otherCpp = cp == 0 ? 1 : 0;
+                                if (inQueue[otherCpp].Count > 0) {
+                                    BigInteger tmp = inQueue[otherCpp][0];
+                                    inQueue[otherCpp].RemoveAt(0);
+                                    registers2[cp][regName] = tmp;
+                                } else  {                           
+                                    isInReceiveState[cp] = true;
+                                    if (waitChars.Count == 0) {
+                                        waitChars[cp] = regName;
+                                    }
+                                }
+                            }
+
+                            indexes[cp] = indexes[cp] + 1;
+                            break;
+                        case "jgz":                            
+                            value = BigInteger.TryParse(regName + "", out val) ? val : registers2[cp][regName];
+                            if (value > 0) {                                
+                                value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
+                                indexes[cp] = indexes[cp] + (int)value;
+                                Console.WriteLine("index added with " + (int)value);
+                            } else {
+                                indexes[cp] = indexes[cp] + 1;
+                            }
+
+                            break;
+                    }
+                }
+                catch (Exception) {
+                    Console.WriteLine("WTF CRASH");
+                    return programOneSendCounter;
+                }
+                
+                cp = cp == 0 ? 1 : 0;
+            }
+        }
+
+        static void SetupDataStructure2(string file) {
+            var inputs = System.IO.File.ReadAllLines(file);
+            for (var j = 0; j < inputs.Length; j++) {
+                var instrs = inputs[j].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                
+                var regName = instrs[0];                            
+                string var1 = instrs[1];
+                string var2 = instrs.Length == 3 ? instrs[2] : null;
+
+                instructions.Add(new Tuple<string, string, string>(regName, var1, var2));
+            }
+
+            for (var i = 0; i < 2; i++) {
+                indexes.Add(0);
+
+                var dict = new Dictionary<char, BigInteger>();
+                dict.Add('a', 0);
+                dict.Add('b', 0);
+                dict.Add('f', 0);
+                dict.Add('i', 0);
+                dict.Add('p', i);
+                registers2.Add(dict);
+            }
         }
 
         static BigInteger GetResult() 
