@@ -1,77 +1,87 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Day18
 {
     class Program
     {
         static List<Tuple<string, string, string>> instructions = new List<Tuple<string, string, string>>();
-        static Dictionary<char, int> registers = new Dictionary<char, int>();
+        static Dictionary<char, BigInteger> registers = new Dictionary<char, BigInteger>();
         static int index = 0;
-        static int lastFreqSent = 0;
+        static BigInteger lastFreqSent = 0;
 
         static void Main(string[] args)
         {
-            SetupDataStructure("inputTest.txt");
+            //SetupDataStructure("inputTest.txt");
+            SetupDataStructure("input.txt");
 
             Console.WriteLine("Result part 1: " + GetResult());
         }
 
-        static int GetResult() 
+        static BigInteger GetResult() 
         {
-            char regName;
-            var value = 0;
-            int val;
+            BigInteger value;
+            BigInteger val;
             while (true) {
                 try {
                     var instruction = instructions[index];
+                    var regName = instruction.Item2[0];
+                    //Console.WriteLine(instruction.Item1 + " " + instruction.Item2 + " " + instruction.Item3 ?? "");
                     switch (instruction.Item1) {
                         case "set":
-                            regName = instruction.Item2[0];
-                            value = int.TryParse(instruction.Item3, out val) ? val : registers[instruction.Item3[0]];
+                            value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers[instruction.Item3[0]];
                             registers[regName] = value;
                             index++;
                             break;
                         case "add":
-                            regName = instruction.Item2[0];
-                            value = int.TryParse(instruction.Item3, out val) ? val : registers[instruction.Item3[0]];
+                            value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers[instruction.Item3[0]];
                             registers[regName] = registers[regName] + value;
                             index++;
                             break;
                         case "mul":
-                            regName = instruction.Item2[0];
-                            value = int.TryParse(instruction.Item3, out val) ? val : registers[instruction.Item3[0]];
-                            registers[regName] = registers[regName] * value;
+                            value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers[instruction.Item3[0]];
+                            var mulVal = registers[regName] * value;
+                            registers[regName] = mulVal;
+                            
+                            Console.WriteLine("mulVal " + mulVal);
                             index++;
                             break;
                         case "mod":
-                            regName = instruction.Item2[0];
-                            value = int.TryParse(instruction.Item3, out val) ? val : registers[instruction.Item3[0]];
-                            registers[regName] = registers[regName] % value;
+                            value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers[instruction.Item3[0]];
+                            var modVal = registers[regName] % value;
+                            registers[regName] = modVal;
+                            
+                            Console.WriteLine("modVal " + modVal);
                             index++;
                             break;
                         case "snd":
-                            regName = instruction.Item2[0];
                             lastFreqSent = registers[regName];
                             index++;
                             break;
                         case "rcv":
-                            regName = instruction.Item2[0];
-                            registers[regName] = lastFreqSent;
+                            if (registers[regName] != 0) {
+                                //registers[regName] = lastFreqSent;
+                                return lastFreqSent;
+                            }
+
                             index++;
                             break;
-                        case "jgz":
-                            regName = instruction.Item2[0];
-                            var regVal = registers[regName];
-                            if (regVal > 0) {
-                                var jumpVal = int.Parse(instruction.Item3);
-                                index += jumpVal;
+                        case "jgz":                            
+                            value = BigInteger.TryParse(regName + "", out val) ? val : registers[regName];
+                            if (value > 0) {                                
+                                value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers[instruction.Item3[0]];
+                                index += (int)value;
+                                Console.WriteLine("index added with " + (int)value);
+                            } else {
+                                index++;
                             }
 
                             break;
                     }
                 }
-                catch (Exception e) {
+                catch (Exception) {
+                    Console.WriteLine("WTF CRASH");
                     return lastFreqSent;
                 }
             }
