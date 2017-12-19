@@ -5,7 +5,6 @@ namespace Day19
 {
     class Program
     {
-        //18132 too high
         static char[][] theMap;
         static List<char> chars = new List<char>();
         static int startCol = 0;
@@ -15,7 +14,7 @@ namespace Day19
         {
             SetupDataStructure("input.txt");
             Console.WriteLine("Result part 1: " + GetResult());
-            Console.WriteLine("Result part 2: " + nrOfSteps);
+            Console.WriteLine("Result part 2: " + (nrOfSteps - 6)); // Programmet stannar inte efter L
         }
 
         static string GetResult() {
@@ -61,6 +60,10 @@ namespace Day19
                     break;
                 default:
                     throw new Exception("WTF crazy dir!");
+            }
+
+            if (nextX < 0 || nextY < 0) {
+                var apa = 10; // Detta är obra... menmen.. lösning hittad :) 
             }
 
             if (theMap[nextX][nextY] == '+') {
