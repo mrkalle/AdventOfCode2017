@@ -7,7 +7,7 @@ namespace Day17
     {
         static void Main(string[] args)
         {
-            //Console.WriteLine("Result part 1: " + GetResult(376));
+            Console.WriteLine("Result part 1: " + GetResult(376));
             Console.WriteLine("Result part 2: " + GetResult2(376));
         }
 
@@ -27,71 +27,29 @@ namespace Day17
                 theList.Insert(currPos, theList.Count);
 
                 if (currPos == 1) {
-                    Console.WriteLine(currPos + ": " + val);
+                    //Console.WriteLine(currPos + ": " + val);
                 }
             } 
 
             return theList[currPos + 1];
         }
-        
-// 1, 23832
-// 1, 31082
-// 1, 48691
-// 1, 53719
-// 1, 60700
-// 1, 442596
 
-
-// 1: 37
-// 1: 239
-// 1: 361
-// 1: 392
-// 1: 823
-// 1: 950
-// 1: 1612
         static int GetResult2(int steps) {
-            //var listSize = 442596;
-            
-            // var listSize = 392 + 1;
-            // //steps = steps;
-            // var currPos = 1;
+            var lastValOnPos1 = 1;
+            var index = 1;
 
-            // var listSize = 3 + 1;
-            // steps = 3;
-            // var currPos = 2;
+            for (var i = 2; i < 50000000; i++) {
+                index = (steps + index) % i; 
 
-            var listSize = 23832 + 1;
-            var currPos = 1;
-            
-            var lastAddedOnPos1 = listSize - 1;
-
-            while (true) {
-                currPos += steps;
-
-                if (currPos == listSize - 1) {
-                    listSize++;
-                    //Console.WriteLine("hit last pos = " + listSize);
-                } else if (currPos >= listSize) {
-                    currPos = currPos - listSize; 
-                    if (currPos == 0) {
-                        lastAddedOnPos1 = listSize;
-                        Console.WriteLine("1 pos = " + listSize);
-                    }
-
-                    listSize++;
-                    currPos++;                    
-                } else {
-                    currPos++;
-                    listSize++;
-                    //Console.WriteLine("normal add");
+                if (index == 0)  {
+                    lastValOnPos1 = i;
+                    //Console.WriteLine("New pos 1 value: " + i);
                 }
 
-                //Console.WriteLine("round complete, " + currPos + ", " + listSize);
-
-                if (listSize > 50000) {
-                    return lastAddedOnPos1;
-                }
+                index++;
             }
+
+            return lastValOnPos1;
         }
     }
 }
