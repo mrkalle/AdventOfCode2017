@@ -12,21 +12,19 @@ namespace Day18
         static int index = 0;
         static List<int> indexes = new List<int>();
         static int cp = 0; // current program
-        static List<bool> isInReceiveState = new List<bool>() { false, false };
         static BigInteger lastFreqSent = 0;
-
         static List<List<BigInteger>> inQueue = new List<List<BigInteger>>();
         static int programOneSendCounter = 0;
-        static List<char> waitChars = new List<char>();
+        static List<char> waitingRegisters = new List<char>();
 
         static void Main(string[] args)
         {
             //SetupDataStructure("inputTest.txt");
-            //SetupDataStructure("input.txt");
-            //Console.WriteLine("Result part 1: " + GetResult());
+            SetupDataStructure("input.txt");
+            Console.WriteLine("Result part 1: " + GetResult());
             
-            SetupDataStructure2("inputTest2.txt");
-            //SetupDataStructure("input.txt");
+            //SetupDataStructure2("inputTest2.txt");
+            SetupDataStructure2("input.txt");
             Console.WriteLine("Result part 2: " + GetResult2());
         }
 
@@ -36,97 +34,94 @@ namespace Day18
             BigInteger val;
             while (true) {
                 try {
-                    if (isInReceiveState[0] && isInReceiveState[1]) {
+                    if (waitingRegisters[0] != ' ' && waitingRegisters[1] != ' ') {
                         return programOneSendCounter;
                     }
+                    
+                    if (waitingRegisters[cp] != ' ') {
+                        if (inQueue[cp].Count == 0) {
+                            //Console.WriteLine("Program " + cp + " wait");
+                        } else {
+                            BigInteger tmp = inQueue[cp][0];
+                            inQueue[cp].RemoveAt(0);
+                            registers2[cp][waitingRegisters[cp]] = tmp;
+                            waitingRegisters[cp] = ' ';
+                        }
+                    } else {
+                        var instruction = instructions[indexes[cp]];
+                        var regName = instruction.Item2[0];
+                        //Console.WriteLine(instruction.Item1 + " " + instruction.Item2 + " " + instruction.Item3 ?? "");
+                        switch (instruction.Item1) {
+                            case "set":
+                                value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
+                                registers2[cp][regName] = value;
+                                indexes[cp] = indexes[cp] + 1;
+                                break;
+                            case "add":
+                                value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
+                                registers2[cp][regName] = registers2[cp][regName] + value;
+                                indexes[cp] = indexes[cp] + 1;
+                                break;
+                            case "mul":
+                                value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
+                                var mulVal = registers2[cp][regName] * value;
+                                registers2[cp][regName] = mulVal;                                
+                                //Console.WriteLine("mulVal " + mulVal);
+                                indexes[cp] = indexes[cp] + 1;
+                                break;
+                            case "mod":
+                                value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
+                                var modVal = registers2[cp][regName] % value;
+                                registers2[cp][regName] = modVal;                                
+                                //Console.WriteLine("modVal " + modVal);
+                                indexes[cp] = indexes[cp] + 1;
+                                break;
+                            case "snd":
+                                var otherCp = cp == 0 ? 1 : 0;
+                                value = BigInteger.TryParse(regName + "", out val) ? val : registers2[cp][regName];
+                                inQueue[otherCp].Add(value);
 
-                    if (isInReceiveState[cp]) {
-                        var otherCppp = cp == 0 ? 1 : 0;
-                        BigInteger tmp = inQueue[otherCppp][0];
-                        inQueue[otherCppp].RemoveAt(0);
-                        registers2[cp][waitChars[cp]] = tmp;
-                    }
-
-                    var instruction = instructions[indexes[cp]];
-                    var regName = instruction.Item2[0];
-                    //Console.WriteLine(instruction.Item1 + " " + instruction.Item2 + " " + instruction.Item3 ?? "");
-                    switch (instruction.Item1) {
-                        case "set":
-                            value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
-                            registers2[cp][regName] = value;
-                            indexes[cp] = indexes[cp] + 1;
-                            break;
-                        case "add":
-                            value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
-                            registers2[cp][regName] = registers2[cp][regName] + value;
-                            indexes[cp] = indexes[cp] + 1;
-                            break;
-                        case "mul":
-                            value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
-                            var mulVal = registers2[cp][regName] * value;
-                            registers2[cp][regName] = mulVal;
-                            
-                            Console.WriteLine("mulVal " + mulVal);
-                            indexes[cp] = indexes[cp] + 1;
-                            break;
-                        case "mod":
-                            value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
-                            var modVal = registers2[cp][regName] % value;
-                            registers2[cp][regName] = modVal;
-                            
-                            Console.WriteLine("modVal " + modVal);
-                            indexes[cp] = indexes[cp] + 1;
-                            break;
-                        case "snd":
-                            var otherCp = cp == 0 ? 1 : 0;
-                            inQueue[otherCp].Add(registers2[cp][regName]);
-
-                            if (cp == 1) {
-                                programOneSendCounter++;
-                            }
-
-                            break;
-                        case "rcv":
-
-                            if (registers2[cp][regName] != 0) {
+                                if (cp == 1) {
+                                    programOneSendCounter++;
+                                }
                                 
-                                var otherCpp = cp == 0 ? 1 : 0;
-                                if (inQueue[otherCpp].Count > 0) {
-                                    BigInteger tmp = inQueue[otherCpp][0];
-                                    inQueue[otherCpp].RemoveAt(0);
+                                indexes[cp] = indexes[cp] + 1;
+
+                                break;
+                            case "rcv":                              
+                                if (inQueue[cp].Count > 0) {
+                                    BigInteger tmp = inQueue[cp][0];
+                                    inQueue[cp].RemoveAt(0);
                                     registers2[cp][regName] = tmp;
                                 } else  {                           
-                                    isInReceiveState[cp] = true;
-                                    if (waitChars.Count == 0) {
-                                        waitChars[cp] = regName;
-                                    }
+                                    waitingRegisters[cp] = regName;
                                 }
-                            }
 
-                            indexes[cp] = indexes[cp] + 1;
-                            break;
-                        case "jgz":                            
-                            value = BigInteger.TryParse(regName + "", out val) ? val : registers2[cp][regName];
-                            if (value > 0) {                                
-                                value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
-                                indexes[cp] = indexes[cp] + (int)value;
-                                Console.WriteLine("index added with " + (int)value);
-                            } else {
                                 indexes[cp] = indexes[cp] + 1;
-                            }
+                                break;
+                            case "jgz":                            
+                                value = BigInteger.TryParse(regName + "", out val) ? val : registers2[cp][regName];
+                                if (value > 0) {                                
+                                    value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers2[cp][instruction.Item3[0]];
+                                    indexes[cp] = indexes[cp] + (int)value;
+                                    //Console.WriteLine("index added with " + (int)value);
+                                } else {
+                                    indexes[cp] = indexes[cp] + 1;
+                                }
 
-                            break;
+                                break;
+                        }
                     }
                 }
-                catch (Exception) {
-                    Console.WriteLine("WTF CRASH");
+                catch (Exception e) {
+                    Console.WriteLine("WTF CRASH!!! " + e.StackTrace);
                     return programOneSendCounter;
                 }
                 
                 cp = cp == 0 ? 1 : 0;
             }
         }
-
+        
         static void SetupDataStructure2(string file) {
             var inputs = System.IO.File.ReadAllLines(file);
             for (var j = 0; j < inputs.Length; j++) {
@@ -149,6 +144,10 @@ namespace Day18
                 dict.Add('i', 0);
                 dict.Add('p', i);
                 registers2.Add(dict);
+
+                waitingRegisters.Add(' ');
+
+                inQueue.Add(new List<BigInteger>());
             }
         }
 
@@ -175,17 +174,15 @@ namespace Day18
                         case "mul":
                             value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers[instruction.Item3[0]];
                             var mulVal = registers[regName] * value;
-                            registers[regName] = mulVal;
-                            
-                            Console.WriteLine("mulVal " + mulVal);
+                            registers[regName] = mulVal;                            
+                            //Console.WriteLine("mulVal " + mulVal);
                             index++;
                             break;
                         case "mod":
                             value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers[instruction.Item3[0]];
                             var modVal = registers[regName] % value;
-                            registers[regName] = modVal;
-                            
-                            Console.WriteLine("modVal " + modVal);
+                            registers[regName] = modVal;                            
+                            //Console.WriteLine("modVal " + modVal);
                             index++;
                             break;
                         case "snd":
@@ -205,7 +202,7 @@ namespace Day18
                             if (value > 0) {                                
                                 value = BigInteger.TryParse(instruction.Item3, out val) ? val : registers[instruction.Item3[0]];
                                 index += (int)value;
-                                Console.WriteLine("index added with " + (int)value);
+                                //Console.WriteLine("index added with " + (int)value);
                             } else {
                                 index++;
                             }
@@ -214,7 +211,7 @@ namespace Day18
                     }
                 }
                 catch (Exception) {
-                    Console.WriteLine("WTF CRASH");
+                    Console.WriteLine("WTF CRASH!!!");
                     return lastFreqSent;
                 }
             }
