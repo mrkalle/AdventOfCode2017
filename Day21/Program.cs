@@ -28,7 +28,7 @@ namespace Day21
                 }
 
                 if (largerSubSquares.Count > 1) {
-                    SetCommonSquare(largerSubSquares, size); // Unite
+                    SetCommonSquare(largerSubSquares, size + 1); // Unite
                 } else {
                     grid = largerSubSquares[0];
                 }
@@ -40,8 +40,8 @@ namespace Day21
 
         static void SetCommonSquare(List<string> subSquares, int size) {
             var nrOfSubSquares = subSquares.Count;
-            var gridSize = GetGridSize(subSquares[0]);
-            var nrOfRowsInCommonSquare = (nrOfSubSquares/size) * gridSize;
+            var gridSize = GetGridSize(subSquares[0]) * 2;
+            var nrOfSquaresPerRow = nrOfSubSquares/2;
             
             for (var i = 0; i < subSquares.Count; i++) {
                 subSquares[i] = subSquares[i].Replace("/", "");    
@@ -50,50 +50,54 @@ namespace Day21
             var newGrid = "";
 
             if (nrOfSubSquares > 1) {
+
                 var newGridList = new List<string>();
-                for (var i = 0; i < nrOfRowsInCommonSquare; i++) {
+                for (var i = 0; i < gridSize; i++) {
                     newGridList.Add("");
                 }
 
-// FUUUUUUUCK!!!
-
-                for (var i = 0; i < gridSize; i++) {
-                    for (var j = 0; j < gridSize; j++) {
-                        var subSquareIndex = (int)(Math.Floor((double)(i/gridSize))*gridSize + Math.Floor((double)(j/gridSize)));
-
-                        newGridList[subSquareIndex] = newGridList[subSquareIndex] + subSquares[subSquareIndex].Substring(j*gridSize, gridSize);
-                    }  
+                for (var i = 0; i < nrOfSquaresPerRow; i++) {
+                    for (var j = 0; j < nrOfSquaresPerRow; j++) {                        
+                        for (var k = 0; k < size; k++) {
+                            for (var l = 0; l < size; l++) {
+                                newGridList[i*size+k] = newGridList[i*size+k] + subSquares[i*nrOfSquaresPerRow+j][k*size + l];
+                            }
+                        }
+                    }
                 }
                 
                 newGrid = string.Join("", newGridList);
             }
 
-            // Lägg in radbryt å...
-
-            for (var i = 0; i < nrOfSubSquares; i++) {
-                for (var j = size - 2; j >= 0; j--) {
-                    subSquares[i] = subSquares[i].Insert(size*j + size, "/");
-                }
+            var startInsert = newGrid.Length - gridSize;
+            for (var i = startInsert; i > 0; i-=gridSize) {
+                newGrid = newGrid.Insert(i, "/");
             }
 
-            grid = subSquares[0];
+            grid = newGrid;
         }
 
         static List<string> GetSubSquares(string oldSquare, int size) {
             var gridSize = GetGridSize(oldSquare);
-            var nrOfSubSquares = gridSize / size;
-            nrOfSubSquares = nrOfSubSquares == 1 ? nrOfSubSquares : nrOfSubSquares*2;
+            var nrOfSubSquares = gridSize / size;        
+            var nrOfSquaresPerRow = nrOfSubSquares == 1 ? 1 : nrOfSubSquares;
+            nrOfSubSquares = nrOfSubSquares == 1 ? 1 : nrOfSubSquares * nrOfSubSquares;
             oldSquare = oldSquare.Replace("/", "");
             var subSquares = new List<string>();
-
+            
             for (var i = 0; i < nrOfSubSquares; i++) {
                 subSquares.Add("");
             }
 
-            for (var i = 0; i < gridSize; i++) {
-                for (var j = 0; j < gridSize; j++) {
-                    var subSquareIndex = (int)(Math.Floor((double)(i/size))*size + Math.Floor((double)(j/size)));
-                    subSquares[subSquareIndex] = subSquares[subSquareIndex] + oldSquare[i*gridSize + j];
+            for (var i = 0; i < nrOfSquaresPerRow; i++) {
+                for (var j = 0; j < nrOfSquaresPerRow; j++) {
+                    // rader i denna subsquare
+                    for (var k = 0; k < size; k++) {
+                        // per char
+                        for (var l = 0; l < size; l++) {
+                            subSquares[i*size + j] = subSquares[i*size + j] + oldSquare[i*gridSize*size + j*size + k*gridSize + l];
+                        }
+                    }
                 }  
             }
 
