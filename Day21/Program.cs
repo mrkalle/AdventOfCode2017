@@ -6,51 +6,79 @@ namespace Day21
     class Program
     {
         static List<Dictionary<string, string>> rules = new List<Dictionary<string, string>>();
-        static string grid = ".#./..#/###";
+        static string grid;
         
-        static void Main(string[] args)
-        {
-            SetupDataStructure("inputTest.txt");
-            //SetupDataStructure("input.txt");
+        static void Main(string[] args) {
+            //SetupDataStructure("inputTest.txt");
+            SetupDataStructure("input.txt");
             Console.WriteLine("Result part 1: " + GetNrOfOnPixels());
+
+            SetupDataStructure("input.txt");
+            Console.WriteLine("Result part 2: " + GetNrOfOnPixels2());
         }
 
         static int GetNrOfOnPixels() {
             for (var i = 0; i < 5; i++) {
-                var gridSize = GetGridSize(grid);
-                var size = gridSize % 2 == 0 ? 2 : 3;
+                var gridLength = grid.Replace("/", "").Length;
+                var size = gridLength % 2 == 0 ? 2 : 3;
 
-                var subSquares = GetSubSquares(grid, size); // Divide into subs
+                var subSquares = GetSubSquares(grid, size);
 
                 var largerSubSquares = new List<string>();
                 foreach (var subSquare in subSquares) {
-                    largerSubSquares.Add(GetLargerSquare(subSquare, size)); // Make larger
+                    largerSubSquares.Add(GetLargerSquare(subSquare, size)); 
                 }
 
                 if (largerSubSquares.Count > 1) {
-                    SetCommonSquare(largerSubSquares, size + 1); // Unite
+                    SetCommonSquare(largerSubSquares, size);
                 } else {
                     grid = largerSubSquares[0];
                 }
             }
 
-            var nrOfOnPixels = grid.Replace(".", "").Length;
+            var filteredGrid = grid.Replace(".", "").Replace("/", "");
+            var nrOfOnPixels = filteredGrid.Length;
             return nrOfOnPixels;
         }
 
-        static void SetCommonSquare(List<string> subSquares, int size) {
-            var nrOfSubSquares = subSquares.Count;
-            var gridSize = GetGridSize(subSquares[0]) * 2;
-            var nrOfSquaresPerRow = nrOfSubSquares/2;
-            
+        static int GetNrOfOnPixels2() {
+            for (var i = 0; i < 18; i++) {
+
+                var gridLength = grid.Replace("/", "").Length;
+                var size = gridLength % 2 == 0 ? 2 : 3;
+
+                var subSquares = GetSubSquares(grid, size);
+
+                var largerSubSquares = new List<string>();
+                foreach (var subSquare in subSquares) {
+                    largerSubSquares.Add(GetLargerSquare(subSquare, size));
+                }
+
+                if (largerSubSquares.Count > 1) {
+                    SetCommonSquare(largerSubSquares, size);
+                } else {
+                    grid = largerSubSquares[0];
+                }
+            }
+
+            var filteredGrid = grid.Replace(".", "").Replace("/", "");
+            var nrOfOnPixels = filteredGrid.Length;
+            return nrOfOnPixels;
+        }
+
+        static void SetCommonSquare(List<string> subSquares, int size) { 
             for (var i = 0; i < subSquares.Count; i++) {
                 subSquares[i] = subSquares[i].Replace("/", "");    
-            }     
+            }    
+
+            var nrOfSubSquares = subSquares.Count;
+            var gridSize = (int)Math.Sqrt(nrOfSubSquares*subSquares[0].Length);
+            var nrOfSquaresPerRow = (int)Math.Sqrt(nrOfSubSquares);
+            size = gridSize / nrOfSquaresPerRow;            
 
             var newGrid = "";
 
             if (nrOfSubSquares > 1) {
-
                 var newGridList = new List<string>();
                 for (var i = 0; i < gridSize; i++) {
                     newGridList.Add("");
@@ -78,11 +106,11 @@ namespace Day21
         }
 
         static List<string> GetSubSquares(string oldSquare, int size) {
-            var gridSize = GetGridSize(oldSquare);
+            oldSquare = oldSquare.Replace("/", "");
+            var gridSize = (int)Math.Sqrt(oldSquare.Length);
             var nrOfSubSquares = gridSize / size;        
             var nrOfSquaresPerRow = nrOfSubSquares == 1 ? 1 : nrOfSubSquares;
             nrOfSubSquares = nrOfSubSquares == 1 ? 1 : nrOfSubSquares * nrOfSubSquares;
-            oldSquare = oldSquare.Replace("/", "");
             var subSquares = new List<string>();
             
             for (var i = 0; i < nrOfSubSquares; i++) {
@@ -95,7 +123,7 @@ namespace Day21
                     for (var k = 0; k < size; k++) {
                         // per char
                         for (var l = 0; l < size; l++) {
-                            subSquares[i*size + j] = subSquares[i*size + j] + oldSquare[i*gridSize*size + j*size + k*gridSize + l];
+                            subSquares[i*nrOfSquaresPerRow + j] = subSquares[i*nrOfSquaresPerRow + j] + oldSquare[i*gridSize*size + j*size + k*gridSize + l];
                         }
                     }
                 }  
@@ -165,6 +193,10 @@ namespace Day21
         }
     
         static void SetupDataStructure(string file) {
+            grid = ".#./..#/###";
+
+            rules = new List<Dictionary<string, string>>();
+
             var inputs = System.IO.File.ReadAllLines(file);
             rules.Add(new Dictionary<string, string>());
             rules.Add(new Dictionary<string, string>());
