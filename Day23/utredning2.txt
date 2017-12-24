@@ -1,0 +1,44 @@
+set b 81
+set c b
+jnz a 2 -- detta är skillnaden för debugging (oändlig loop eller ej), om ej debug så till rad 5 (obra)
+	jnz 1 5 -- till rad 9 (hoppar över alla )
+		mul b 100 << hit från rad 3 (att jnz:as hit är dåligt), b = 81*100 = 8100
+		sub b -100000--, b = 8100+100000=108100
+		set c b -- c = 108100
+		sub c -17000 -- c = 108100 + 17000 = 125100
+set f 1 -- från sista loop OCH från bra rad 4, här disablas h:s addition
+set d 2 -- d=2
+set e 2 -- hit från rad 24, e=2
+set g d -- hit från rad 20, här börjar den oändliga loopen, 
+mul g e << g = g*e
+sub g b 
+jnz g 2 -- till rad 17, om g != 0 så sätts f inte till 0, och så g = 0 här å
+set f 0
+sub e -1 -- hit från rad 15
+set g e -- spelar ingen roll
+sub g b -- g tar b:s värde, så b = 0
+jnz g -8 -- till rad 12, vi vill fortsätta m nästa så g måste vara 0, bara oändlig loop om a=1 vid start
+sub d -1 -- d ökas med 1, d ska vara 12
+set g d -- här g=d (d ska vara 13)
+sub g b -- här tar vi g = g - b (b ska vara 13)
+jnz g -13 -- vi vill att g ska vara 0 så vi inte gör hoppet utan fortsätter, "g" ska vara 0 här
+jnz f 2 -- till rad 27, det här hoppet gör att h inte gör det den ska! debugging orsakar det! WHY? HOW? "f" ska vara 0 här
+sub h -1 <-- Det enda man gör med h är att addera 1. (sub -1 = add 1)
+set g b -- hit från rad 25
+sub g c
+jnz g 2 -- till rad 29
+jnz 1 3 --här hoppar man ut, här ska "h" ha rätt värde.. då får vi svaret
+sub b -17 --hit från rad 29
+jnz 1 -23 --till rad 9
+
+
+
+
+instruktionerna är programmet som ger svaret i "h"
+
+fixa instruktionerna så att h blir != 0...
+
+eller fixa så att programmet räknar ut skit i debug läget!
+
+mul körs 6241 ggr
+

@@ -20,8 +20,7 @@ namespace Day20
         {
             //SetupDataStructure("inputTest.txt");
             SetupDataStructure("input.txt");
-            //Console.WriteLine("Result part 1: " + GetResult());
-            
+            Console.WriteLine("Result part 1: " + GetResult());            
             Console.WriteLine("Result part 2: " + GetResult2());
         }
 
@@ -30,7 +29,7 @@ namespace Day20
             MarkParticlesForCollisions();
             RemoveCollidingParticles();
 
-            for (var i = 0; i < 100000; i++) 
+            for (var i = 0; i < 1000; i++) 
             {
                 SetNewPositions();
                 MarkParticlesForCollisions();
@@ -42,10 +41,12 @@ namespace Day20
 
         static void RemoveCollidingParticles() {
             for (var i = collisions.Count - 1; i >= 0; i--) {
-                pList.RemoveAt(i);
-                vList.RemoveAt(i);
-                aList.RemoveAt(i);
+                pList.RemoveAt(collisions[i]);
+                vList.RemoveAt(collisions[i]);
+                aList.RemoveAt(collisions[i]);
             }
+
+            collisions = new List<int>();
         }
 
         static void MarkParticlesForCollisions() {
@@ -64,6 +65,7 @@ namespace Day20
 
             if (collisions.Count > 0) {
                 collisions = collisions.Distinct().ToList();
+                collisions.Sort();
             }
         }
 
