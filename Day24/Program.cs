@@ -1,30 +1,74 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Day24
 {
     class Program
     {
         static Dictionary<string, List<Tuple<string, string>>> ports = new Dictionary<string, List<Tuple<string, string>>>();
-
         static int bestBridgeWeight = 0;
+        static int longestBridge = 0;
+        static int longestBridgeWeight = 0;
 
         static void Main(string[] args)
         {
-            SetupDataStructure("inputTest.txt");
-            //SetupDataStructure("input.txt");
+            //SetupDataStructure("inputTest.txt");
+            SetupDataStructure("input.txt");
 
-            // Börja på 0-noder... loopa över alla noder som har noll i sig och lägg på den på listan in
-            var a = ports["0"].Count;
+            foreach (var startPort in ports["0"]) {
+                var bridge = new List<Tuple<string,string>> { startPort };
+                if (startPort.Item1 == "0") {
+                    FindBestBridge(bridge, startPort.Item2);
+                } else {
+                    FindBestBridge(bridge, startPort.Item1);
+                }
+            }
 
-            FindBestBridge(new List<Tuple<string,string>>());
             Console.WriteLine("Result part 1: " + bestBridgeWeight);
+            Console.WriteLine("Result part 2: " + longestBridgeWeight);
         }
 
-        static void FindBestBridge(List<Tuple<string, string>> bridgeSoFar) {
-            // Om det inte finns fler noder att besöka, räkna ut vikten på "bridgeSoFar" och returnera
+        static int GetBridgeWeight(List<Tuple<string,string>> bridge) {
+            var weight = 0;
+            foreach (var port in bridge) {
+                weight += int.Parse(port.Item1) + int.Parse(port.Item2);
+            }
 
-            // Annars lägg till en ny port och gå på djupet på den... skicka med "bridgeSoFar"
+            return weight;
+        }
+
+        static void FindBestBridge(List<Tuple<string, string>> bridge, string currOtherNumber) {
+            var neighbours = ports[currOtherNumber].Where(x => !bridge.Contains(x)).ToList();
+            if (neighbours.Count == 0) {
+                var weight = GetBridgeWeight(bridge);
+                if (weight > bestBridgeWeight) {
+                    bestBridgeWeight = weight;
+                }
+
+                if (bridge.Count > longestBridge) {
+                    longestBridge = bridge.Count;
+                    longestBridgeWeight = weight;
+                } else if (bridge.Count == longestBridge) {
+                    if (weight > longestBridgeWeight) {
+                        longestBridgeWeight = weight;
+                    }
+                }
+
+                return;
+            }
+
+            foreach (var neighbour in neighbours)
+            {
+                bridge.Add(neighbour);
+                if (neighbour.Item1 == currOtherNumber) {
+                    FindBestBridge(bridge, neighbour.Item2);
+                } else {
+                    FindBestBridge(bridge, neighbour.Item1);
+                }
+
+                bridge.Remove(neighbour);
+            }
         }
 
         static void SetupDataStructure(string file) {
